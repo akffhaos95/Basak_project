@@ -1,0 +1,1 @@
+<img src="<c:url value='/resources/img/main.png'/>" class="rounded mx-auto d-block" alt="..."/>	

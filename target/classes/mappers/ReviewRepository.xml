@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.basak.app.dao.IReviewRepository">
+	<resultMap id="reviewMap" type="com.basak.app.model.ReviewVO">
+		<result property="reviewId" column="REVIEW_ID"/>
+		<result property="star" column="STAR"/>
+		<result property="comment" column="REVIEW_COMMENT"/>
+		<result property="snackId" column="SNACK_ID"/>
+		<result property="memberId" column="MEMBER_ID"/>
+	</resultMap>
+	<resultMap id="starMap" type="com.basak.app.model.StarVO">
+		<result property="category" column="CATEGORY"/>
+		<result property="company" column="COMPANY"/>
+		<result property="snackName" column="SNACK_NAME"/>
+		<result property="avg" column="AVG"/>
+	</resultMap>
+	<resultMap id="ChartMap" type="com.basak.app.model.ChartMap">
+        <result property="name" column="NAME"/>
+        <result property="avg" column="AVG"/>
+    </resultMap>
+	
+	
+	<!-- 페이징을 위한 전체 카운트 -->
+	<select id="countReview" resultType="int">
+		SELECT COUNT(*) FROM REVIEW WHERE SNACK_ID=#{snackId}
+	</select>
+	
+	<!-- 페이징 처리 후 게시글 조회 -->
+	<select id="selectReview" resultMap="reviewMap">
+		SELECT * FROM (
+			SELECT ROWNUM RN, A.*
+			FROM (
+				SELECT *
+				FROM REVIEW
+				WHERE SNACK_ID = #{snackId}
+				ORDER BY REVIEW_ID DESC
+			) A
+		)
+		WHERE RN BETWEEN #{vo.start} AND #{vo.end}
+		AND SNACK_ID = #{snackId}
+	</select>
+	
+	<!-- 리뷰 페이지 -->
+	<!-- 리뷰 삭제를 위한 snackId 값 처리 -->
+	<select id="getSnackId" resultType="int">
+		SELECT SNACK_ID FROM REVIEW WHERE REVIEW_ID=#{reviewId}
+	</select>
+	
+	<!-- 평균 별점 -->
+	<select id="getSnackAvg" resultType="double">
+		SELECT NVL(AVG(STAR),0) FROM REVIEW WHERE SNACK_ID=#{snackId}
+	</select>
+	
+	<!-- 리뷰 저장 -->
+	<insert id="insertReview">
+		INSERT INTO REVIEW (
+			REVIEW_ID, STAR, REVIEW_COMMENT, SNACK_ID, MEMBER_ID)
+		VALUES (
+			REVIEW_SEQ.NEXTVAL, #{star}, #{comment}, #{snackId}, #{memberId})
+	</insert>
+	
+	<!-- 리뷰 삭제 -->
+	<delete id="deleteReview" parameterType="com.basak.app.model.ReviewVO">
+		DELETE FROM REVIEW 
+		WHERE REVIEW_ID=#{reviewId} AND MEMBER_ID=#{memberId}
+	</delete>
+	
+	<select id="getSnackChart" resultMap="ChartMap">
+		<![CDATA[SELECT 
+			SNACK.SNACK_NAME AS NAME,
+			AVG(REVIEW.STAR) AS AVG
+		FROM REVIEW, SNACK
+		WHERE REVIEW.SNACK_ID = SNACK.SNACK_ID 
+		GROUP BY SNACK.SNACK_NAME
+		ORDER BY AVG DESC]]>
+	</select>
+	
+	<select id="getCompanyChart" resultMap="ChartMap">
+		<![CDATA[SELECT 
+   			COMPANY.COMPANY_NAME AS NAME,
+    		AVG(REVIEW.STAR) AS AVG
+		FROM REVIEW, SNACK, COMPANY
+		WHERE REVIEW.SNACK_ID = SNACK.SNACK_ID
+		AND SNACK.SNACK_COMPANY = COMPANY.COMPANY_ID
+		GROUP BY COMPANY.COMPANY_NAME
+		ORDER BY AVG DESC]]>
+	</select>
+	
+	<select id="getCategoryChart" resultMap="ChartMap">
+		<![CDATA[SELECT 
+   			CATEGORY.CATEGORY_NAME AS NAME,
+    		AVG(REVIEW.STAR) AS AVG
+		FROM REVIEW, SNACK, CATEGORY
+		WHERE REVIEW.SNACK_ID = SNACK.SNACK_ID
+		AND SNACK.SNACK_CATEGORY = CATEGORY.CATEGORY_ID
+		GROUP BY CATEGORY.CATEGORY_NAME
+		ORDER BY AVG DESC]]>	
+	</select>
+	
+	<select id="getMemberAvg" resultType="double">
+		SELECT NVL(AVG(STAR),0) FROM REVIEW WHERE MEMBER_ID=#{memberId}	
+	</select>
+
+	<select id="countMemberReview" resultType="int">
+		SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = #{memberId}
+	</select>
+
+	<select id="selectMemberReview" resultMap="reviewMap">
+		SELECT * FROM (
+			SELECT ROWNUM RN, A.*
+			FROM (
+				SELECT *
+				FROM REVIEW
+				WHERE MEMBER_ID = #{memberId}
+				ORDER BY REVIEW_ID DESC
+			) A
+		)
+		WHERE RN BETWEEN #{vo.start} AND #{vo.end}
+		AND MEMBER_ID = #{memberId}
+	</select>
+		
+	<!-- 미사용 -->
+	<!-- 리뷰 수정 -->
+	<update id="updateReview" parameterType="com.basak.app.model.ReviewVO">
+		UPDATE REIVEW 
+		SET STAR=#{star}, REVIEW_COMMENT=#{comment}, SNACK_ID=#{snackId} 
+		WHERE  REVIEW_ID=#{reviewId} AND MEMBER_ID=#{memberId}
+	</update>
+</mapper>

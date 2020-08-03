@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+
+	<!-- 멤버 조회 -->
+	<select id="memberList" resultType="com.basak.app.model.MemberVO">
+		SELECT 
+			MEMBER_ID AS memberId,
+			MEMBER_PW AS memberPw,
+			MEMBER_NAME AS memberName
+		FROM MEMBER
+		ORDER BY memberName
+	</select>
+	
+	<!-- 회원 가입 -->
+	<insert id="insertMember">
+		INSERT INTO MEMBER
+		VALUES (#{memberId}, #{memberPw}, #{memberName}, #{memberAuth}, #{memberMail})
+	</insert>
+	
+	<!-- 회원 등록 아이디 중복 체크 -->
+	<select id="writeCheck" resultType="com.basak.app.model.MemberVO">
+		SELECT 
+			MEMBER_ID AS memberId,
+			MEMBER_NAME AS memberName
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+	</select>
+	
+	<!-- 메일 인증 체크 -->
+	<select id="authCheck" resultType="com.basak.app.model.MemberVO">
+		SELECT MEMBER_ID AS memberId FROM MEMBER
+		WHERE MEMBER_AUTH = #{memberAuth}
+	</select>
+	
+	<!-- 로그인 -->
+	<select id="login" resultType="com.basak.app.model.MemberVO">
+		SELECT 
+			MEMBER_ID AS memberId, 
+			MEMBER_NAME AS memberName,
+			MEMBER_AUTH AS memberAuth,
+			MEMBER_EMAIL AS memberMail
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId} 
+		AND MEMBER_PW = #{memberPw}
+	</select>
+	
+	<!-- Update Auth -->
+	<update id="updateAuth">
+		UPDATE MEMBER 
+		SET MEMBER_AUTH = 1
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<!-- View Member -->
+	<select id="viewMember" resultType="com.basak.app.model.MemberVO">
+		SELECT 
+			MEMBER_ID AS memberId,
+			MEMBER_PW AS memberPw,
+			MEMBER_NAME AS memberName
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId} AND MEMBER_PW = #{memberPw}
+	</select>
+	
+	<!-- 회원 정보 조회 -->
+	<select id="getMemberInfo" resultType="com.basak.app.model.MemberVO">
+		SELECT 
+			MEMBER_ID AS memberId,
+			MEMBER_PW AS memberPw,
+			MEMBER_NAME AS memberName,
+			MEMBER_EMAIL AS memberMail
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+	</select>
+	
+	<!-- 비밀번호 체크 -->
+	<select id="checkPw" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId} 
+		AND MEMBER_PW = #{memberPw}
+	</select>
+	
+	<!-- 회원 정보 수정 -->
+	<update id="updateMember">
+		UPDATE MEMBER
+		SET MEMBER_NAME = #{memberName}
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<!-- 회원 탈퇴 -->
+	<delete id="deleteMember">
+		DELETE FROM MEMBER WHERE MEMBER_ID=#{memberID} AND MEMBER_PW=#{memberPw}
+	</delete>
+</mapper>

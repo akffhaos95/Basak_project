@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.basak.app.dao.ISnackRepository">
+	<resultMap id="snackMap" type="com.basak.app.model.SnackVO">
+		<result property="snackId" column="SNACK_ID" />
+		<result property="snackNAME" column="SNACK_NAME" />
+		<result property="snackIMG" column="SNACK_IMG" />
+		<result property="snackCompany" column="SNACK_Company" />
+		<result property="snackCategory" column="SNACK_Category" />
+	</resultMap>
+	<resultMap id="companyMap" type="com.basak.app.model.CompanyVO">
+		<result property="companyId" column="COMPANY_ID" />
+		<result property="companyName" column="COMPANY_NAME" />
+	</resultMap>
+	<resultMap id="categoryMap" type="com.basak.app.model.CategoryVO">
+		<result property="categoryId" column="CATEGORY_ID" />
+		<result property="categoryName" column="CATEGORY_NAME" />
+	</resultMap>
+	
+	<!-- 검색 창 -->
+	<!-- 회사별 출력 -->
+	<select id="getCompanyInfo" resultMap="companyMap">
+		SELECT * FROM COMPANY
+	</select>
+	
+	<!-- 종류별 출력 -->
+	<select id="getCategoryInfo" resultMap="categoryMap">
+		SELECT * FROM CATEGORY
+	</select>
+	
+	<!-- 리스트 -->
+	<!-- 전체 리스트 -->
+	<select id="getSnackId" resultMap="snackMap">
+		SELECT * FROM SNACK WHERE SNACK_ID != 0 
+		<if test="company != 0">
+			AND SNACK_COMPANY = #{company}
+		</if>
+		<if test="category != 0">
+			AND SNACK_CATEGORY = #{category}
+		</if>
+		<if test="search != null and search != ''">
+			AND SNACK_NAME LIKE '%'||#{search}||'%' 
+		</if>
+	</select>
+	
+	<!-- 회사별, 종류별 검색으로 쿼리하였을때 return값이 null인 문제 미해결 -->
+	<!-- 현재는 회사, 리스트의 종류가 적기때문에 각각 처리 -->
+	<!-- 회사별 리스트 -->
+	<select id="getSnackCompany" resultMap="snackMap">
+		SELECT * FROM SNACK WHERE SNACK_COMPANY = #{company}
+	</select>
+	
+	<!-- 종류별 리스트 -->
+	<select id="getSnackCategory" resultMap="snackMap">
+		SELECT * FROM SNACK WHERE SNACK_CATEGORY = #{category}
+	</select>
+	
+	<!-- 상세 조회 -->
+	<!-- ID에 따른 과자 정보 -->
+	<select id="getSnackInfo" parameterType="int" resultType="com.basak.app.model.SnackVO">
+		SELECT 
+			SNACK_ID AS snackId,
+			SNACK_NAME AS snackNAME,
+			SNACK_IMG AS snackIMG,
+			COMPANY.COMPANY_NAME AS snackCompanyS,
+			CATEGORY.CATEGORY_NAME AS snackCategoryS,
+			SNACK_CAL AS snackCal
+		FROM SNACK, CATEGORY, COMPANY
+		WHERE SNACK_ID = #{snackId}
+		AND CATEGORY.CATEGORY_ID = SNACK.SNACK_CATEGORY
+		AND COMPANY.COMPANY_ID = SNACK.SNACK_COMPANY
+	</select>
+	
+	<!-- 미사용 -->
+	<!-- 관리자 권한에서 이루어지는 동작 -->	
+	<!-- 저장 -->
+	<insert id="insertSnack" parameterType="com.basak.app.model.SnackVO">
+		INSERT INTO SNACK (
+			SNACK_ID, SNACK_NAME, SNACK_IMG, SNACK_Company, SNACK_Category)
+		VALUES (
+			#{snackID}, #{snackNAME}, #{snackIMG}, #{snackCompany}, #{snackCategory})
+	</insert>
+	<!-- 수정 -->
+	<update id="updateSnack" parameterType="com.basak.app.model.SnackVO">
+		UPDATE SNACK 
+		SET SNACK_NAME=#{snackNAME}, SNACK_IMG=#{snackIMG}, SNACK_Company=#{snackCompany}, SNACK_Category=#{snackCategory}
+		WHERE SNACK_ID=#{snackID}
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="deleteSnack">
+		DELETE FROM SNACK WHERE SNACK_ID=#{snackID}
+	</delete>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.basak.app.dao.IRecommendRepository">
+	<resultMap id="recommendMap" type="com.basak.app.model.RecommendVO">
+		<result property="recommendId" column="RECOMMEND_ID" />
+		<result property="comment" column="RECOMMEND_COMMENT" />
+		<result property="memberId" column="MEMBER_ID" />
+	</resultMap>
+	
+	<!-- 페이징을 위한 전체 카운트 -->
+	<select id="countRecommend" resultType="int">
+		SELECT COUNT(*) FROM RECOMMEND
+	</select>
+	
+	<!-- 페이징 처리 후 게시글 조회 -->
+	<select id="selectRecommend" resultMap="recommendMap">
+		SELECT * FROM (
+			SELECT ROWNUM RN, A.*
+			FROM (
+				SELECT *
+				FROM RECOMMEND
+				ORDER BY RECOMMEND_ID DESC
+			) A
+		)
+		WHERE RN BETWEEN #{start} AND #{end}
+	</select>
+	
+	<!-- 추천 저장 -->
+	<insert id="insertRecommend">
+		INSERT INTO RECOMMEND (
+			RECOMMEND_ID, RECOMMEND_COMMENT, MEMBER_ID)
+		VALUES (
+			AUTO_SEQ.NEXTVAL, #{comment}, #{memberId})
+	</insert>
+	
+	<!-- 추천 삭제 -->	
+	<delete id="deleteRecommend" parameterType="com.basak.app.model.RecommendVO">
+		DELETE FROM RECOMMEND
+		WHERE RECOMMEND_ID=#{recommendId} 
+		AND MEMBER_ID=#{memberId}
+	</delete>
+	
+	<!-- 미사용 -->
+	<update id="updateRecommend" parameterType="com.basak.app.model.RecommendVO">
+		UPDATE RECOMMEND 
+		SET RECOMMEND_COMMENT=#{comment}
+		WHERE MEMBER_ID=#{memberId}
+		AND RECOMMEND_ID=#{recommendId}
+	</update>
+</mapper>
